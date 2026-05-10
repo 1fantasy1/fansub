@@ -801,9 +801,9 @@ depend() {
 need net
 }
 EOF
-chmod +x /etc/init.d/xray >/dev/null 2>&1
-rc-update add xray default >/dev/null 2>&1
-rc-service xray start >/dev/null 2>&1
+chmod +x /etc/init.d/xray 2>&1
+rc-update add xray default 2>&1
+rc-service xray start 2>&1
 else
 nohup "$HOME/fsub/xray" run -c "$HOME/fsub/xr.json" >/dev/null 2>&1 &
 fi
@@ -856,9 +856,9 @@ depend() {
 need net
 }
 EOF
-chmod +x /etc/init.d/sing-box >/dev/null 2>&1
-rc-update add sing-box default >/dev/null 2>&1
-rc-service sing-box start >/dev/null 2>&1
+chmod +x /etc/init.d/sing-box 2>&1
+rc-update add sing-box default 2>&1
+rc-service sing-box start 2>&1
 else
 nohup "$HOME/fsub/sing-box" run -c "$HOME/fsub/sb.json" >/dev/null 2>&1 &
 fi
