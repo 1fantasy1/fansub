@@ -293,7 +293,7 @@ cat >> "$HOME/fsub/xr.json" <<EOF
             "flow": "xtls-rprx-vision"
           }
         ],
-        "decryption": "${dekey}"
+        "decryption": "none"
       },
       "streamSettings": {
         "network": "xhttp",
@@ -346,7 +346,7 @@ cat >> "$HOME/fsub/xr.json" <<EOF
             "flow": "xtls-rprx-vision"
           }
         ],
-        "decryption": "${dekey}"
+        "decryption": "none"
       },
       "streamSettings": {
         "network": "xhttp",
@@ -1001,7 +1001,7 @@ fi
 if grep xhttp-reality "$HOME/fsub/xr.json" >/dev/null 2>&1; then
 echo "💣【 Vless-xhttp-reality-enc 】支持ENC加密，节点信息如下："
 port_xh=$(cat "$HOME/fsub/port_xh")
-vl_xh_link="vless://$uuid@$server_ip:$port_xh?encryption=$enkey&flow=xtls-rprx-vision&security=reality&sni=$ym_vl_re&fp=chrome&pbk=$public_key_x&sid=$short_id_x&type=xhttp&path=$uuid-xh&mode=auto#${sxname}vl-xhttp-reality-enc-$hostname"
+vl_xh_link="vless://$uuid@$server_ip:$port_xh?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$ym_vl_re&fp=chrome&pbk=$public_key_x&sid=$short_id_x&type=xhttp&path=$uuid-xh&mode=auto#${sxname}vl-xhttp-reality-enc-$hostname"
 echo "$vl_xh_link" >> "$HOME/fsub/jhsub.txt"
 echo "$vl_xh_link"
 echo
@@ -1009,7 +1009,7 @@ fi
 if grep vless-xhttp "$HOME/fsub/xr.json" >/dev/null 2>&1; then
 echo "💣【 Vless-xhttp-enc 】支持ENC加密，节点信息如下："
 port_vx=$(cat "$HOME/fsub/port_vx")
-vl_vx_link="vless://$uuid@$server_ip:$port_vx?encryption=$enkey&flow=xtls-rprx-vision&type=xhttp&path=$uuid-vx&mode=auto#${sxname}vl-xhttp-enc-$hostname"
+vl_vx_link="vless://$uuid@$server_ip:$port_vx?encryption=none&flow=xtls-rprx-vision&type=xhttp&path=$uuid-vx&mode=auto#${sxname}vl-xhttp-enc-$hostname"
 echo "$vl_vx_link" >> "$HOME/fsub/jhsub.txt"
 echo "$vl_vx_link"
 echo
