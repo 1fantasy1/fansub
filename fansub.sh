@@ -166,13 +166,27 @@ echo "所有节点名称前缀：$name"
 fi
 v4v6
 }
+ghdl(){
+local url="$1" out="$2"
+rm -f "$out"
+if command -v curl >/dev/null 2>&1; then
+curl -Lo "$out" -# --retry 2 "$url" 2>&1
+fi
+if [ ! -f "$out" ] || [ "$(wc -c < "$out")" -lt 1024 ]; then
+rm -f "$out"
+echo "curl下载失败或文件过小，尝试wget..."
+if command -v wget >/dev/null 2>&1; then
+wget -O "$out" --tries=2 "$url" 2>&1
+fi
+fi
+[ -f "$out" ] && [ "$(wc -c < "$out")" -gt 1024 ] || { echo "错误：下载失败（文件不存在或过小），请检查网络连接"; rm -f "$out"; return 1; }
+}
 upxray(){
 xver=$( (command -v curl >/dev/null 2>&1 && curl -sL https://api.github.com/repos/XTLS/Xray-core/releases/latest | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p') || (command -v wget >/dev/null 2>&1 && wget -qO- https://api.github.com/repos/XTLS/Xray-core/releases/latest | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p') )
 [ -z "$xver" ] && { echo "错误：无法获取 Xray 最新版本号"; exit 1; }
 url="https://github.com/XTLS/Xray-core/releases/download/${xver}/Xray-linux-${cpu}.zip"
 out="/tmp/xray-linux-${cpu}.zip"
-(command -v curl >/dev/null 2>&1 && curl -Lo "$out" -# --retry 2 "$url") || (command -v wget>/dev/null 2>&1 && timeout 3 wget -O "$out" --tries=2 "$url")
-[ -f "$out" ] || { echo "错误：Xray 下载失败"; exit 1; }
+ghdl "$url" "$out" || exit 1
 echo "Xray 下载完成，SHA256："
 sha256sum "$out" 2>/dev/null || shasum -a 256 "$out" 2>/dev/null || echo "（无法计算哈希，请手动校验）"
 unzip -o "$out" -d "$HOME/fsub/" 2>&1
@@ -187,8 +201,7 @@ sver=$( (command -v curl >/dev/null 2>&1 && curl -sL https://api.github.com/repo
 [ -z "$sver" ] && { echo "错误：无法获取 Sing-box 最新版本号"; exit 1; }
 url="https://github.com/SagerNet/sing-box/releases/download/${sver}/sing-box-${sver#v}-linux-${cpu}.tar.gz"
 out="/tmp/sing-box-linux-${cpu}.tar.gz"
-(command -v curl>/dev/null 2>&1 && curl -Lo "$out" -# --retry 2 "$url") || (command -v wget>/dev/null 2>&1 && timeout 3 wget -O "$out" --tries=2 "$url")
-[ -f "$out" ] || { echo "错误：Sing-box 下载失败"; exit 1; }
+ghdl "$url" "$out" || exit 1
 echo "Sing-box 下载完成，SHA256："
 sha256sum "$out" 2>/dev/null || shasum -a 256 "$out" 2>/dev/null || echo "（无法计算哈希，请手动校验）"
 tar -xzf "$out" -C /tmp/ 2>&1
