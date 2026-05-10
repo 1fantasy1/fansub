@@ -133,8 +133,8 @@ hostname=$(uname -a | awk '{print $2}')
 op=$(cat /etc/redhat-release 2>/dev/null || cat /etc/os-release 2>/dev/null | grep -i pretty_name | cut -d \" -f2)
 [ -z "$(systemd-detect-virt 2>/dev/null)" ] && vi=$(virt-what 2>/dev/null) || vi=$(systemd-detect-virt 2>/dev/null)
 case $(uname -m) in
-arm64|aarch64) cpu=arm64;;
-amd64|x86_64) cpu=amd64;;
+arm64|aarch64) cpu=arm64; xcpu=arm64-v8a;;
+amd64|x86_64) cpu=amd64; xcpu=64;;
 *) echo "目前脚本不支持$(uname -m)架构" && exit
 esac
 if [ "$1" != "del" ]; then
@@ -184,8 +184,8 @@ fi
 upxray(){
 xver=$( (command -v curl >/dev/null 2>&1 && curl -sL https://api.github.com/repos/XTLS/Xray-core/releases/latest | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p') || (command -v wget >/dev/null 2>&1 && wget -qO- https://api.github.com/repos/XTLS/Xray-core/releases/latest | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p') )
 [ -z "$xver" ] && { echo "错误：无法获取 Xray 最新版本号"; exit 1; }
-url="https://github.com/XTLS/Xray-core/releases/download/${xver}/Xray-linux-${cpu}.zip"
-out="/tmp/xray-linux-${cpu}.zip"
+url="https://github.com/XTLS/Xray-core/releases/download/${xver}/Xray-linux-${xcpu}.zip"
+out="/tmp/xray-linux-${xcpu}.zip"
 ghdl "$url" "$out" || exit 1
 echo "Xray 下载完成，SHA256："
 sha256sum "$out" 2>/dev/null || shasum -a 256 "$out" 2>/dev/null || echo "（无法计算哈希，请手动校验）"
