@@ -796,13 +796,16 @@ command="$HOME/fsub/xray"
 command_args="run -c $HOME/fsub/xr.json"
 command_background=yes
 pidfile="/run/xray.pid"
-command_background="yes"
+output_log="$HOME/fsub/xray.log"
+error_log="$HOME/fsub/xray.log"
 depend() {
 need net
 }
 EOF
 chmod +x /etc/init.d/xray 2>&1
 rc-update add xray default 2>&1
+rc-service xray stop 2>/dev/null
+rm -f /run/xray.pid
 rc-service xray start 2>&1
 else
 nohup "$HOME/fsub/xray" run -c "$HOME/fsub/xr.json" >/dev/null 2>&1 &
@@ -851,7 +854,8 @@ command="$HOME/fsub/sing-box"
 command_args="run -c $HOME/fsub/sb.json"
 command_background=yes
 pidfile="/run/sing-box.pid"
-command_background="yes"
+output_log="$HOME/fsub/sing-box.log"
+error_log="$HOME/fsub/sing-box.log"
 depend() {
 need net
 }
