@@ -2,17 +2,6 @@
 export LANG=en_US.UTF-8
 AGSBX_TMPFILE=$(mktemp /tmp/fsub.XXXXXX 2>/dev/null || echo "/tmp/fsub.$$")
 trap 'rm -f "$AGSBX_TMPFILE"' EXIT INT TERM
-[ -z "${vlpt+x}" ] || vlp=yes
-[ -z "${vmpt+x}" ] || { vmp=yes; vmag=yes; }
-[ -z "${hypt+x}" ] || hyp=yes
-[ -z "${tupt+x}" ] || tup=yes
-[ -z "${xhpt+x}" ] || xhp=yes
-[ -z "${vxpt+x}" ] || vxp=yes
-[ -z "${anpt+x}" ] || anp=yes
-[ -z "${sspt+x}" ] || ssp=yes
-[ -z "${arpt+x}" ] || arp=yes
-[ -z "${sopt+x}" ] || sop=yes
-if [ "$vlp" != yes ] && [ "$vmp" != yes ] && [ "$hyp" != yes ] && [ "$tup" != yes ] && [ "$xhp" != yes ] && [ "$vxp" != yes ] && [ "$anp" != yes ] && [ "$ssp" != yes ] && [ "$arp" != yes ] && [ "$sop" != yes ]; then
 case "$1" in list|del|res|rep|upx|ups|"") ;; *) echo "未知命令：$1"; exit 1 ;; esac
 if [ "$1" != "list" ] && [ "$1" != "del" ] && [ "$1" != "res" ] && [ "$1" != "rep" ] && [ "$1" != "upx" ] && [ "$1" != "ups" ]; then
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -76,8 +65,8 @@ read -p "UUID密码（留空随机生成）: " input_uuid
 [ -n "$input_uuid" ] && uuid="$input_uuid"
 read -p "节点名称前缀: " input_name
 [ -n "$input_name" ] && name="$input_name"
-read -p "切换IPv4/IPv6（4或6，留空自动）: " input_ippz
-[ -n "$input_ippz" ] && ippz="$input_ippz"
+read -p "绑定域名（留空使用IP地址）: " input_dom
+[ -n "$input_dom" ] && dom="$input_dom"
 read -p "开放脚本所需端口（y开启，留空关闭）: " input_oap
 [ -n "$input_oap" ] && oap="$input_oap"
 read -p "启用订阅链接（y开启，留空关闭）: " input_sub
@@ -102,13 +91,10 @@ echo ""
 [ -z "${arpt+x}" ] || arp=yes
 [ -z "${sopt+x}" ] || sop=yes
 fi
-fi
 if find /proc/*/exe -type l 2>/dev/null | grep -E '/proc/[0-9]+/exe' | xargs -r readlink 2>/dev/null | grep -Eq 'fsub/(s|x)' || pgrep -f 'fsub/(s|x)' >/dev/null 2>&1; then
-if [ "$1" = "rep" ]; then
-[ "$sop" = yes ] || [ "$vxp" = yes ] || [ "$ssp" = yes ] || [ "$vlp" = yes ] || [ "$vmp" = yes ] || [ "$hyp" = yes ] || [ "$tup" = yes ] || [ "$xhp" = yes ] || [ "$anp" = yes ] || [ "$arp" = yes ] || { echo "提示：rep重置协议时，请在脚本前至少设置一个协议变量哦，再见！💣"; exit; }
-fi
+:
 else
-[ "$1" = "del" ] || [ "$sop" = yes ] || [ "$vxp" = yes ] || [ "$ssp" = yes ] || [ "$vlp" = yes ] || [ "$vmp" = yes ] || [ "$hyp" = yes ] || [ "$tup" = yes ] || [ "$xhp" = yes ] || [ "$anp" = yes ] || [ "$arp" = yes ] || { echo "提示：未安装fansub脚本，请在脚本前至少设置一个协议变量哦，再见！💣"; exit; }
+[ "$1" = "del" ] || [ "$sop" = yes ] || [ "$vxp" = yes ] || [ "$ssp" = yes ] || [ "$vlp" = yes ] || [ "$vmp" = yes ] || [ "$hyp" = yes ] || [ "$tup" = yes ] || [ "$xhp" = yes ] || [ "$anp" = yes ] || [ "$arp" = yes ] || { echo "提示：未安装fansub脚本，请先选择协议进行安装，再见！💣"; exit; }
 fi
 export uuid=${uuid:-''}
 export port_vl_re=${vlpt:-''}
@@ -122,26 +108,25 @@ export port_ar=${arpt:-''}
 export port_ss=${sspt:-''}
 export port_so=${sopt:-''}
 export ym_vl_re=${reym:-''}
-export ippz=${ippz:-''}
+export dom=${dom:-''}
 export name=${name:-''}
 export oap=${oap:-''}
 v46url="https://icanhazip.com"
 showmode(){
-echo "fansub脚本一键SSH命令生器在线网址：https://YOUR_GITHUB_USER.github.io/fansub/"
+echo "fansub脚本一键命令生器在线网址：https://YOUR_GITHUB_USER.github.io/fansub/"
 echo "主脚本：bash <(curl -Ls https://raw.githubusercontent.com/YOUR_GITHUB_USER/fansub/main/fansub.sh) 或 bash <(wget -qO- https://raw.githubusercontent.com/YOUR_GITHUB_USER/fansub/main/fansub.sh)"
 echo "显示节点信息命令：fsub list 【或者】 主脚本 list"
-echo "重置变量组命令：自定义各种协议变量组 fsub rep 【或者】 自定义各种协议变量组 主脚本 rep"
-echo "更新脚本命令：原已安装的自定义各种协议变量组 主脚本 rep"
+echo "重置协议命令：fsub rep 【或者】 主脚本 rep"
+echo "更新脚本命令：主脚本 rep"
 echo "更新Xray或Singbox内核命令：fsub upx或ups 【或者】 主脚本 upx或ups"
 echo "重启脚本命令：fsub res 【或者】 主脚本 res"
 echo "卸载脚本命令：fsub del 【或者】 主脚本 del"
-echo "双栈VPS显示IPv4/IPv6节点配置命令：ippz=4或6 fsub list 【或者】 ippz=4或6 主脚本 list"
 echo "---------------------------------------------------------"
 echo
 }
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo "Github项目 ：github.com/YOUR_GITHUB_USER"
-echo "fansub一键无交互小钢炮脚本💣"
+echo "fansub一键小钢炮脚本💣"
 echo "当前版本：V26.5.10"
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 hostname=$(uname -a | awk '{print $2}')
@@ -970,22 +955,10 @@ echo "本地IPV6地址：$vps_ipv6"
 echo "服务器地区：$location"
 echo
 sleep 2
-if [ "$ippz" = "4" ]; then
-if [ -z "$v4" ]; then
 ipbest
-else
-server_ip="$v4"
+if [ -n "$dom" ]; then
+server_ip="$dom"
 echo "$server_ip" > "$HOME/fsub/server_ip.log"
-fi
-elif [ "$ippz" = "6" ]; then
-if [ -z "$v6" ]; then
-ipbest
-else
-server_ip="[$v6]"
-echo "$server_ip" > "$HOME/fsub/server_ip.log"
-fi
-else
-ipbest
 fi
 }
 ipchange
@@ -1747,14 +1720,14 @@ if [ "$1" = "del" ]; then
 cleandel
 rm -rf sbx_update "$HOME/fsub" "$HOME/websbx"
 echo "卸载完成"
-echo "欢迎继续使用fansub一键无交互小钢炮脚本💣" && sleep 2
+echo "欢迎继续使用fansub一键小钢炮脚本💣" && sleep 2
 echo
 showmode
 exit
 elif [ "$1" = "rep" ]; then
 cleandel
 rm -rf "$HOME/fsub"/{sb.json,xr.json,name}
-echo "fansub重置协议完成，开始更新相关协议变量……" && sleep 2
+echo "fansub重置协议完成，请重新选择协议……" && sleep 2
 echo
 elif [ "$1" = "list" ]; then
 cip
