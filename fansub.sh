@@ -214,13 +214,12 @@ sbcore=$("$HOME/fsub/sing-box" version 2>/dev/null | awk '/version/{print $NF}')
 echo "已安装Sing-box正式版内核：$sbcore"
 }
 insuuid(){
-if [ -z "$uuid" ] && [ ! -e "$HOME/fsub/uuid" ]; then
+if [ -z "$uuid" ] && [ ! -s "$HOME/fsub/uuid" ]; then
 if [ -e "$HOME/fsub/sing-box" ]; then
-uuid=$("$HOME/fsub/sing-box" generate uuid)
+"$HOME/fsub/sing-box" generate uuid > "$HOME/fsub/uuid" 2>/dev/null
 else
-uuid=$("$HOME/fsub/xray" uuid)
+"$HOME/fsub/xray" uuid > "$HOME/fsub/uuid" 2>/dev/null
 fi
-echo "$uuid" > "$HOME/fsub/uuid"
 elif [ -n "$uuid" ]; then
 echo "$uuid" > "$HOME/fsub/uuid"
 fi
@@ -248,18 +247,17 @@ ym_vl_re=apple.com
 fi
 echo "$ym_vl_re" > "$HOME/fsub/ym_vl_re"
 echo "Reality域名：$ym_vl_re"
-if [ ! -e "$HOME/fsub/xrk/private_key" ]; then
-key_pair=$("$HOME/fsub/xray" x25519)
-private_key=$(echo "$key_pair" | awk -F':' '/PrivateKey/ {print $2}' | xargs)
-public_key=$(echo "$key_pair" | awk -F':' '/Password/ {print $2}' | xargs)
-short_id=$(date +%s%N | sha256sum | cut -c 1-8)
-echo "$private_key" > "$HOME/fsub/xrk/private_key"
-echo "$public_key" > "$HOME/fsub/xrk/public_key"
-echo "$short_id" > "$HOME/fsub/xrk/short_id"
+if [ ! -s "$HOME/fsub/xrk/private_key" ]; then
+"$HOME/fsub/xray" x25519 > "$HOME/fsub/xrk/key_pair.txt" 2>&1
+awk -F':' '/PrivateKey/{v=$2; gsub(/^[ \t]+|[ \t]+$/,"",v); print v}' "$HOME/fsub/xrk/key_pair.txt" > "$HOME/fsub/xrk/private_key"
+awk -F':' '/PublicKey/{v=$2; gsub(/^[ \t]+|[ \t]+$/,"",v); print v}' "$HOME/fsub/xrk/key_pair.txt" > "$HOME/fsub/xrk/public_key"
+date +%s%N | sha256sum | cut -c 1-8 > "$HOME/fsub/xrk/short_id"
+rm -f "$HOME/fsub/xrk/key_pair.txt"
+[ -s "$HOME/fsub/xrk/private_key" ] || { echo "错误：Reality私钥生成失败，请检查 xray x25519 输出"; exit 1; }
 fi
-private_key_x=$(cat "$HOME/fsub/xrk/private_key")
-public_key_x=$(cat "$HOME/fsub/xrk/public_key")
-short_id_x=$(cat "$HOME/fsub/xrk/short_id")
+private_key_x=$(cat "$HOME/fsub/xrk/private_key" 2>/dev/null)
+public_key_x=$(cat "$HOME/fsub/xrk/public_key" 2>/dev/null)
+short_id_x=$(cat "$HOME/fsub/xrk/short_id" 2>/dev/null)
 fi
 if [ -n "$xhp" ] || [ -n "$vxp" ]; then
 if [ ! -e "$HOME/fsub/xrk/dekey" ]; then
@@ -556,18 +554,17 @@ fi
 echo "$ym_vl_re" > "$HOME/fsub/ym_vl_re"
 echo "Reality域名：$ym_vl_re"
 mkdir -p "$HOME/fsub/sbk"
-if [ ! -e "$HOME/fsub/sbk/private_key" ]; then
-key_pair=$("$HOME/fsub/sing-box" generate reality-keypair)
-private_key=$(echo "$key_pair" | awk '/PrivateKey/ {print $2}' | tr -d '"')
-public_key=$(echo "$key_pair" | awk '/PublicKey/ {print $2}' | tr -d '"')
-short_id=$("$HOME/fsub/sing-box" generate rand --hex 4)
-echo "$private_key" > "$HOME/fsub/sbk/private_key"
-echo "$public_key" > "$HOME/fsub/sbk/public_key"
-echo "$short_id" > "$HOME/fsub/sbk/short_id"
+if [ ! -s "$HOME/fsub/sbk/private_key" ]; then
+"$HOME/fsub/sing-box" generate reality-keypair > "$HOME/fsub/sbk/key_pair.txt" 2>&1
+awk '/PrivateKey/{gsub(/"/,"",$2); print $2}' "$HOME/fsub/sbk/key_pair.txt" > "$HOME/fsub/sbk/private_key"
+awk '/PublicKey/{gsub(/"/,"",$2); print $2}' "$HOME/fsub/sbk/key_pair.txt" > "$HOME/fsub/sbk/public_key"
+"$HOME/fsub/sing-box" generate rand --hex 4 > "$HOME/fsub/sbk/short_id" 2>/dev/null
+rm -f "$HOME/fsub/sbk/key_pair.txt"
+[ -s "$HOME/fsub/sbk/private_key" ] || { echo "错误：Sing-box Reality私钥生成失败"; exit 1; }
 fi
-private_key_s=$(cat "$HOME/fsub/sbk/private_key")
-public_key_s=$(cat "$HOME/fsub/sbk/public_key")
-short_id_s=$(cat "$HOME/fsub/sbk/short_id")
+private_key_s=$(cat "$HOME/fsub/sbk/private_key" 2>/dev/null)
+public_key_s=$(cat "$HOME/fsub/sbk/public_key" 2>/dev/null)
+short_id_s=$(cat "$HOME/fsub/sbk/short_id" 2>/dev/null)
 if [ -z "$port_ar" ] && [ ! -e "$HOME/fsub/port_ar" ]; then
 port_ar=$(shuf -i 10000-65535 -n 1)
 echo "$port_ar" > "$HOME/fsub/port_ar"
@@ -608,9 +605,9 @@ arp=arptpt
 fi
 if [ -n "$ssp" ]; then
 ssp=sspt
-if [ ! -e "$HOME/fsub/sskey" ]; then
-sskey=$("$HOME/fsub/sing-box" generate rand 16 --base64)
-echo "$sskey" > "$HOME/fsub/sskey"
+if [ ! -s "$HOME/fsub/sskey" ]; then
+"$HOME/fsub/sing-box" generate rand 16 --base64 > "$HOME/fsub/sskey" 2>/dev/null
+[ -s "$HOME/fsub/sskey" ] || { echo "错误：Shadowsocks密钥生成失败"; exit 1; }
 fi
 if [ -z "$port_ss" ] && [ ! -e "$HOME/fsub/port_ss" ]; then
 port_ss=$(shuf -i 10000-65535 -n 1)
