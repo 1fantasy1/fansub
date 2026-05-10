@@ -78,7 +78,7 @@ read -p "节点名称前缀: " input_name
 [ -n "$input_name" ] && name="$input_name"
 read -p "切换IPv4/IPv6（4或6，留空自动）: " input_ippz
 [ -n "$input_ippz" ] && ippz="$input_ippz"
-read -p "开放系统所有端口（y开启，留空关闭）: " input_oap
+read -p "开放脚本所需端口（y开启，留空关闭）: " input_oap
 [ -n "$input_oap" ] && oap="$input_oap"
 read -p "启用订阅链接（y开启，留空关闭）: " input_sub
 [ -n "$input_sub" ] && sub="$input_sub"
@@ -1800,16 +1800,6 @@ fi
 echo "VPS系统：$op"
 echo "CPU架构：$cpu"
 echo "fansub脚本未安装，开始安装…………" && sleep 1
-if [ -n "$oap" ]; then
-setenforce 0 >/dev/null 2>&1
-iptables -P INPUT ACCEPT >/dev/null 2>&1
-iptables -P FORWARD ACCEPT >/dev/null 2>&1
-iptables -P OUTPUT ACCEPT >/dev/null 2>&1
-iptables -F >/dev/null 2>&1
-netfilter-persistent save >/dev/null 2>&1
-echo
-echo "iptables执行开放所有端口"
-fi
 ins
 if [ -n "$sub" ]; then
 subtokenipsub(){
@@ -1862,6 +1852,28 @@ crontab $AGSBX_TMPFILE >/dev/null 2>&1
 rm $AGSBX_TMPFILE
 fi
 echo "本地IP订阅链接已更新完成"
+fi
+if [ -n "$oap" ]; then
+setenforce 0 >/dev/null 2>&1
+openport(){
+local pt=$1 proto=$2
+[ -n "$pt" ] && iptables -I INPUT -p "$proto" --dport "$pt" -j ACCEPT 2>/dev/null && ip6tables -I INPUT -p "$proto" --dport "$pt" -j ACCEPT 2>/dev/null
+}
+openport 22 tcp
+[ -f "$HOME/fsub/port_vl_re" ] && openport "$(cat "$HOME/fsub/port_vl_re")" tcp
+[ -f "$HOME/fsub/port_xh" ] && openport "$(cat "$HOME/fsub/port_xh")" tcp
+[ -f "$HOME/fsub/port_vx" ] && openport "$(cat "$HOME/fsub/port_vx")" tcp
+[ -f "$HOME/fsub/port_vm_ws" ] && openport "$(cat "$HOME/fsub/port_vm_ws")" tcp
+[ -f "$HOME/fsub/port_so" ] && openport "$(cat "$HOME/fsub/port_so")" tcp
+[ -f "$HOME/fsub/port_ss" ] && openport "$(cat "$HOME/fsub/port_ss")" tcp
+[ -f "$HOME/fsub/port_an" ] && openport "$(cat "$HOME/fsub/port_an")" tcp
+[ -f "$HOME/fsub/port_ar" ] && openport "$(cat "$HOME/fsub/port_ar")" tcp
+[ -f "$HOME/fsub/port_hy2" ] && openport "$(cat "$HOME/fsub/port_hy2")" udp
+[ -f "$HOME/fsub/port_tu" ] && openport "$(cat "$HOME/fsub/port_tu")" udp
+[ -n "$subport" ] && openport "$subport" tcp
+netfilter-persistent save >/dev/null 2>&1
+echo
+echo "iptables已开放脚本所需端口"
 fi
 if [ -n "$hyjpt" ] && [ -n "$hyp" ]; then
 echo
