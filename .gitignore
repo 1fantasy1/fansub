@@ -1,0 +1,11 @@
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+*.sqlite
+data/
+output/
+__pycache__/
+*.log
+agsbx/
