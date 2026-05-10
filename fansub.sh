@@ -175,7 +175,8 @@ out="/tmp/xray-linux-${cpu}.zip"
 [ -f "$out" ] || { echo "错误：Xray 下载失败"; exit 1; }
 echo "Xray 下载完成，SHA256："
 sha256sum "$out" 2>/dev/null || shasum -a 256 "$out" 2>/dev/null || echo "（无法计算哈希，请手动校验）"
-unzip -o "$out" -d "$HOME/fsub/" >/dev/null 2>&1
+unzip -o "$out" -d "$HOME/fsub/" 2>&1
+[ -f "$HOME/fsub/xray" ] || { echo "错误：Xray 解压失败，请检查 unzip 是否已安装"; rm -f "$out"; exit 1; }
 chmod +x "$HOME/fsub/xray"
 rm -f "$out"
 sbcore=$("$HOME/fsub/xray" version 2>/dev/null | awk '/^Xray/{print $2}')
@@ -190,8 +191,9 @@ out="/tmp/sing-box-linux-${cpu}.tar.gz"
 [ -f "$out" ] || { echo "错误：Sing-box 下载失败"; exit 1; }
 echo "Sing-box 下载完成，SHA256："
 sha256sum "$out" 2>/dev/null || shasum -a 256 "$out" 2>/dev/null || echo "（无法计算哈希，请手动校验）"
-tar -xzf "$out" -C /tmp/ >/dev/null 2>&1
-cp -f /tmp/sing-box-${sver#v}-linux-${cpu}/sing-box "$HOME/fsub/sing-box" 2>/dev/null
+tar -xzf "$out" -C /tmp/ 2>&1
+cp -f /tmp/sing-box-${sver#v}-linux-${cpu}/sing-box "$HOME/fsub/sing-box" 2>&1
+[ -f "$HOME/fsub/sing-box" ] || { echo "错误：Sing-box 解压失败，请检查 tar 是否已安装"; rm -f "$out"; rm -rf "/tmp/sing-box-${sver#v}-linux-${cpu}"; exit 1; }
 chmod +x "$HOME/fsub/sing-box"
 rm -f "$out"
 rm -rf "/tmp/sing-box-${sver#v}-linux-${cpu}"
