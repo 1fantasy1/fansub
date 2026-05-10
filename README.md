@@ -28,7 +28,7 @@
 ## 使用方式
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/1fantasy1/fansub/refs/heads/main/fansub.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/1fantasy1/fansub/refs/heads/master/fansub.sh)
 ```
 
 终端菜单引导选择协议、输入配置，自动完成安装。
